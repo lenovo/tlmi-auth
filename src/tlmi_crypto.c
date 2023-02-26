@@ -90,7 +90,7 @@ void print_info(const char *format, ...) {
 
 void set_key_passwd(char* passwd)
 {
-	strncpy(key_passwd_buf, passwd, MAX_PSWD);
+	strncpy(key_passwd_buf, passwd, MAX_PSWD-1);
 	key_passwd_len = strnlen(key_passwd_buf, MAX_PSWD);
 }
 
@@ -98,27 +98,6 @@ void set_printmode(int quiet, int verbose)
 {
 	quiet_mode = quiet;
 	verbose_mode = verbose;
-}
-
-static char *bin2hex(const unsigned char *bin, size_t len)
-{
-	char   *out;
-	size_t  i;
-
-	if (bin == NULL || len == 0)
-		return NULL;
-
-	out = (char *)malloc(len * 2 + 1);
-	if (!out)
-		return NULL;
-
-	for (i = 0; i<len; i++) {
-		out[i * 2] = "0123456789ABCDEF"[bin[i] >> 4];
-		out[i * 2 + 1] = "0123456789ABCDEF"[bin[i] & 0x0F];
-	}
-	out[len * 2] = '\0';
-
-	return out;
 }
 
 static int hexchr2bin(const char hex, char *out)
@@ -204,7 +183,9 @@ static int Base64Encode(const unsigned char* buffer, size_t length, char** base6
 	return 0;
 }
 
-static int password_callback(char *buf, int bufsiz, int verify, void *u)
+static int password_callback(char *buf, int bufsiz,
+	       __attribute__((unused)) int verify,
+	       __attribute__((unused)) void *u)
 {
 	strncpy(buf, key_passwd_buf, bufsiz);
 	return key_passwd_len;
@@ -339,7 +320,7 @@ int unlock_request(char *keyfile, char *request)
 	CERT_REQUEST req;
 	RSA *rsa;
 	int ret = 0;
-	unsigned char *encrypted;
+	unsigned char *encrypted = NULL;
 	int len;
 	char otp[OTP_LEN + 1];
 	char serial[SERIAL_LEN];
@@ -511,11 +492,10 @@ static int pkey_encryption_test(EVP_PKEY *pkey)
 int cert_format_pem(char *certFile, char **base64cert, size_t *certLen)
 {
 	FILE *fp;
-	int filesz = 0;
+	size_t filesz = 0;
 	void *certBuf;
 	BIO* certBio;
 	X509* cert;
-	char *p;
 	int check;
 	size_t ret;
 	char buf[BUF_LEN];
@@ -546,14 +526,14 @@ int cert_format_pem(char *certFile, char **base64cert, size_t *certLen)
 		fclose(fp);
 		return -1;
 	}
-	ret = fread(certBuf, 1, (size_t)filesz, fp);
+	ret = fread(certBuf, 1, filesz, fp);
 	fclose(fp);
 	if (ret != filesz) {
 		fprintf(stderr, "cannot read %s\n", certFile);
 		return -1;
 	}
 
-	*certLen = (size_t)filesz;
+	*certLen = filesz;
 	certBio = BIO_new(BIO_s_mem());
 	BIO_write(certBio, certBuf, *certLen);
 
@@ -633,7 +613,7 @@ int cert_format_pem(char *certFile, char **base64cert, size_t *certLen)
 int cert_format_der(char *certFile, char **base64cert, size_t *certLen)
 {
 	FILE *fp;
-	int filesz = 0;
+	size_t filesz = 0;
 	void *certBuf;
 	BIO* certBio;
 	X509* cert;
@@ -660,13 +640,13 @@ int cert_format_der(char *certFile, char **base64cert, size_t *certLen)
 	fseek(fp, 0, SEEK_SET);
 
 	// read file
-	certBuf = calloc((size_t)(filesz + 1), 1);
+	certBuf = calloc(filesz + 1, 1);
 	if (!certBuf) {
 		fclose(fp);
 		return -1;
 	}
 
-	ret = fread(certBuf, 1, (size_t)filesz, fp);
+	ret = fread(certBuf, 1, filesz, fp);
 	fclose(fp);
 	if (ret != filesz) {
 		fprintf(stderr, "cannot read %s\n", certFile);

@@ -65,8 +65,6 @@ static void usage(void)
 
 int main(int argc, char* argv[])
 {
-	int quiet = 0;
-	int verbose = 0;
 	char *command = NULL;
 	char *cert = NULL;
 	char *key = NULL;
@@ -131,11 +129,9 @@ int main(int argc, char* argv[])
 				outfile = optarg;
 				break;
 			case 'q':
-				quiet = 1;
 				set_printmode(1, 0);
 				break;
 			case 'D':
-				verbose = 1;
 				set_printmode(0, 1);
 				break;
 			case 'h':
