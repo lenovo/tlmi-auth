@@ -3,18 +3,32 @@
 Utility for creating signature strings needed for thinklmi certificate based authentication
 
 ## Building
- - Make sure you have the openssl development libraries installed
 
-`sudo apt install libssl-dev`
+### Prerequisites
 
-or
+- Meson 0.54 or newer
+- A C compiler (tested with GCC >= 8.0)
+- OpenSSL 1.1 or newer
 
-`sudo dnf install openssl-devel`
+#### Fedora Linux / Red Hat Enterprise Linux / CentOS Stream
 
- - run `make`
+`sudo dnf install meson gcc openssl-devel`
+
+#### Debian / Ubuntu
+
+`sudo apt install meson gcc libssl-dev`
+
+### Build and install steps
+
+1. `meson setup . build`
+2. `meson compile -C build`
+3. `meson install -C build`
+
+`tlmi-auth` will be installed into `/usr/local/bin` by default.
 
 ## Usage
 
+```
 Usage: tlmi-auth command [option]
 
 Where commands are
@@ -44,6 +58,7 @@ Where commands are
 * -h displays this message
 
 The tool will create a thinklmi.sh file (unless name specified by the -o option). This file has the commands that need to be run on the client system.
+```
 
 ## Implementation
 

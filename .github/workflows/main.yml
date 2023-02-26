@@ -1,0 +1,30 @@
+name: Main Actions
+
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        container-image:
+          - 'registry.fedoraproject.org/fedora:latest'
+          - 'quay.io/centoshyperscale/centos:stream9'
+          - 'quay.io/centoshyperscale/centos:stream8'
+      fail-fast: false
+
+    container: ${{ matrix.container-image }}
+
+    steps:
+      - name: Install pre-requisites
+        run: dnf --assumeyes install
+              meson gcc openssl-devel
+              /usr/bin/git
+      - uses: actions/checkout@v3
+      - name: meson setup
+        run: meson setup . build
+      - name: meson compile
+        run: meson compile
+        working-directory: ./build

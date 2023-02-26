@@ -27,7 +27,10 @@
 #include <string.h>
 #include "tlmi_crypto.h"
 
-#define PROG_VER      "V1.0.1"
+#ifndef TLMI_PROG_VER
+#define TLMI_PROG_VER   "0.0.0"
+#endif
+
 #define TLMI_ADMIN "/sys/class/firmware-attributes/thinklmi/authentication/Admin"
 #define TLMI_ATTR "/sys/class/firmware-attributes/thinklmi/attributes"
 
@@ -57,7 +60,7 @@ static void usage(void)
 	fprintf(stderr, "* -q option will inhibit all informative messages\n");
 	fprintf(stderr, "* -h displays this message\n");
 	//fprintf(stderr, "* -D option will print extra debug information\n");
-	fprintf(stderr, "Lenovo ThinkLMI Authenticator Utility %s (built %s)\n", PROG_VER, __DATE__);
+	fprintf(stderr, "Lenovo ThinkLMI Authenticator Utility version %s (built %s)\n", TLMI_PROG_VER, __DATE__);
 }
 
 int main(int argc, char* argv[])
