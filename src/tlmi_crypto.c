@@ -574,8 +574,8 @@ int cert_format_pem(char *certFile, char **base64cert, size_t *certLen)
 	// Key length
 	print_info(" Public Key\n");
 	print_info(" %d bit RSA key\n", EVP_PKEY_bits(pkey));
-	if (EVP_PKEY_bits(pkey) != 2048) {
-		fprintf(stderr, "RSA key size must be 2048 bit.\n");
+	if ((EVP_PKEY_bits(pkey) != 2048) && (EVP_PKEY_bits(pkey) != 4096)) {
+		fprintf(stderr, "RSA key size must be 2048 or 4096 bits.\n");
 		return -1;
 	}
 
