@@ -46,6 +46,7 @@
 #define WMI_ADMIN_USER  "SVC" /* AKA SuperVisor */
 #define WMI_SYSTEM_USER "SMC"
 
+static char *default_user = "admin";
 static char *default_outfile = "thinklmi.sh";
 
 static void usage(void)
@@ -61,7 +62,7 @@ static void usage(void)
 	fprintf(stderr, "  unlock -f request.txt -k privkey.pem           - Generate unlock code from request file.\n");
 	fprintf(stderr, "  unlock -r request-string -k privkey.pem        - Generate unlock code from request string.\n");
 
-	fprintf(stderr, "* -u option specifes the user - \"admin\" or \"system\". Admin user is default.\n");
+	fprintf(stderr, "* -u option specifes the user - \"admin\" or \"system\". \"%s\" user is default.\n", default_user);
 	fprintf(stderr, "* -d option can be used instead of -c for DER formatted certificates.\n");
 	fprintf(stderr, "* -o option specifies output filename.\n");
 	fprintf(stderr, "* -z option specifies private key password if required.\n");
@@ -73,7 +74,7 @@ static void usage(void)
 
 static char * determine_user_file(char *user)
 {
-	if (!user)
+	if (!strcasecmp(user, "admin"))
 		return TLMI_ADMIN;
 	if (!strcasecmp(user, "system"))
 		return TLMI_SYSTEM;
@@ -82,8 +83,10 @@ static char * determine_user_file(char *user)
 
 static char * determine_user_type(char *user)
 {
-	if (!user)
+	if (!strcasecmp(user, ""))
 		return NULL;
+	if (!strcasecmp(user, "admin"))
+		return WMI_ADMIN_USER;
 	if (!strcasecmp(user, "system"))
 		return WMI_SYSTEM_USER;
 	return WMI_ADMIN_USER;
@@ -182,6 +185,10 @@ int main(int argc, char* argv[])
 		}
 	}
 
+	/* If user is not provided use default user */
+	if (!user)
+		user = default_user;
+
 	/* Create output file for thinklmi commands */
 	if (!outfile)
 		outfile = default_outfile;
@@ -227,7 +234,7 @@ int main(int argc, char* argv[])
 			free(base64cert);
 			return -1;
 		}
-		if (user)
+		if (determine_user_type(user))
 			ret = sprintf(wmistr, "%s,%s,%s", WMI_UPDATE_CERT, determine_user_type(user), base64cert);
 		else
 			ret = sprintf(wmistr, "%s,%s", WMI_UPDATE_CERT, base64cert);
@@ -258,7 +265,7 @@ int main(int argc, char* argv[])
 		if (!wmistr)
 			return -1;
 
-		if (user)
+		if (determine_user_type(user))
 			ret = sprintf(wmistr, "%s,%s,%s", WMI_CLEAR_CERT, determine_user_type(user), sysserial);
 		else
 			ret = sprintf(wmistr, "%s,%s", WMI_CLEAR_CERT, sysserial);
@@ -322,7 +329,7 @@ int main(int argc, char* argv[])
 		if (!wmistr)
 			return -1;
 
-		if (user)
+		if (determine_user_type(user))
 			ret = sprintf(wmistr, "%s,%s,%s", wmi_cert2pass, determine_user_type(user), password);
 		else
 			ret = sprintf(wmistr, "%s,%s", wmi_cert2pass, password);
